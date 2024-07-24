@@ -135,6 +135,21 @@ function isCollidingEnemy() {
 // Iniciamos la colisión con el enemigo
 isCollidingEnemy();
 
+//juego acaba con colision y se reinicia
+function isCollidingEnd() {
+    if (Math.abs(player.x - 6.5) < 0.5 && Math.abs(player.y - 6.5) < 0.5) {
+        alert('Ganaste');
+        player.x = 1.5;
+        player.y = 1.5;
+    }
+    setTimeout(isCollidingEnd, 1000);
+}
+
+// Iniciamos la colisión con el final
+isCollidingEnd();
+
+
+
 
 
 // Iniciamos el juego
