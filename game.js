@@ -23,6 +23,14 @@ const player = {
     speed: 0.1, // velocidad del jugador
 };
 
+// Definimos al enemigo
+const enemy = {
+    x: 6.5, // posición en el eje x (en coordenadas del mapa)
+    y: 6.5, // posición en el eje y (en coordenadas del mapa)
+    size: 10, // tamaño del enemigo
+    speed: 0.1, // velocidad del enemigo
+};
+
 // Colisiones con las paredes
 function isColliding(newX, newY) {
     // Convertir coordenadas del jugador a coordenadas del mapa
@@ -58,16 +66,24 @@ function drawPlayer() {
     context.arc(player.x * tileSize, player.y * tileSize, player.size, 0, Math.PI * 2);
     context.fill();
 }
+//funcion para dibujar al enemigo
+function drawEnemy() {
+    context.fillStyle = 'blue';
+    context.beginPath();
+    context.arc(enemy.x * tileSize, enemy.y * tileSize, enemy.size, 0, Math.PI * 2);
+    context.fill();
+}
 
 // Función para actualizar el juego
 function update() {
     context.clearRect(0, 0, canvas.width, canvas.height);
     drawMap();
     drawPlayer();
+    drawEnemy();
     requestAnimationFrame(update);
 }
 
-// Movimiento
+// Movimiento del jugador
 document.addEventListener('keydown', function(event) {
     let newX = player.x;
     let newY = player.y;
@@ -91,6 +107,34 @@ document.addEventListener('keydown', function(event) {
         player.y = newY;
     }
 });
+
+// Movimiento aleatorio del enemigo
+function moveEnemy() {
+    let newX = enemy.x + (Math.random() - 1) * enemy.speed;
+    let newY = enemy.y + (Math.random() - 1) * enemy.speed;
+
+    // Verificamos si la colisión es verdadera
+    if (!isColliding(newX, newY)) {
+        enemy.x = newX;
+        enemy.y = newY;
+    }
+    setTimeout(moveEnemy, 1000);
+}
+
+// Iniciamos el movimiento del enemigo
+moveEnemy();
+
+// si jugador colisiona con el enemigo
+function isCollidingEnemy() {
+    if (Math.abs(player.x - enemy.x) < 0.5 && Math.abs(player.y - enemy.y) < 0.5) {
+        alert('Perdiste');
+    }
+    setTimeout(isCollidingEnemy, 1000);
+}
+
+// Iniciamos la colisión con el enemigo
+isCollidingEnemy();
+
 
 
 // Iniciamos el juego
