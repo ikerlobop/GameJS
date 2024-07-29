@@ -2,7 +2,7 @@ const canvas = document.getElementById('gameCanvas');
 const context = canvas.getContext('2d');
 const tileSize = 80; // Tamaño de cada celda del mapa
 
-// //Definimos el mapa
+// Definimos el mapa
 const map = [
     [1, 1, 1, 1, 1, 1, 1, 1],
     [1, 0, 0, 0, 0, 0, 0, 1],
@@ -14,7 +14,6 @@ const map = [
     [1, 1, 1, 1, 1, 1, 1, 1],
 ];
 
-
 // Definimos al jugador
 const player = {
     x: 1.5, // posición en el eje x (en coordenadas del mapa)
@@ -23,37 +22,32 @@ const player = {
     speed: 0.1, // velocidad del jugador
 };
 
-// Definimos al enemigo
-const enemy = {
-    x: 6.5, // posición en el eje x (en coordenadas del mapa)
-    y: 6.5, // posición en el eje y (en coordenadas del mapa)
-    size: 10, // tamaño del enemigo
-    speed: 0.1, // velocidad del enemigo
-};
+// Array de enemigos
+let enemies = [
+    {
+        x: 6.5, // posición en el eje x (en coordenadas del mapa)
+        y: 6.5, // posición en el eje y (en coordenadas del mapa)
+        size: 10, // tamaño del enemigo
+        speed: 0.1, // velocidad del enemigo
+    }
+];
 
 // Colisiones con las paredes
 function isColliding(newX, newY) {
-    // Convertir coordenadas del jugador a coordenadas del mapa
     const mapX = Math.floor(newX);
     const mapY = Math.floor(newY);
 
-    // Verificar si la celda en el mapa es una pared
     if (map[mapY][mapX] === 1) {
         return true;
     }
     return false;
 }
 
-
 // Función para dibujar el mapa
 function drawMap() {
     for (let y = 0; y < map.length; y++) {
         for (let x = 0; x < map[y].length; x++) {
-            if (map[y][x] === 1) {
-                context.fillStyle = 'black'; // color de las paredes
-            } else {
-                context.fillStyle = 'white'; // color del suelo
-            }
+            context.fillStyle = map[y][x] === 1 ? 'black' : 'white';
             context.fillRect(x * tileSize, y * tileSize, tileSize, tileSize);
         }
     }
@@ -66,12 +60,15 @@ function drawPlayer() {
     context.arc(player.x * tileSize, player.y * tileSize, player.size, 0, Math.PI * 2);
     context.fill();
 }
-//funcion para dibujar al enemigo
-function drawEnemy() {
+
+// Función para dibujar los enemigos
+function drawEnemies() {
     context.fillStyle = 'blue';
-    context.beginPath();
-    context.arc(enemy.x * tileSize, enemy.y * tileSize, enemy.size, 0, Math.PI * 2);
-    context.fill();
+    enemies.forEach(enemy => {
+        context.beginPath();
+        context.arc(enemy.x * tileSize, enemy.y * tileSize, enemy.size, 0, Math.PI * 2);
+        context.fill();
+    });
 }
 
 // Función para actualizar el juego
@@ -79,7 +76,8 @@ function update() {
     context.clearRect(0, 0, canvas.width, canvas.height);
     drawMap();
     drawPlayer();
-    drawEnemy();
+    drawEnemies();
+    checkCollisions();
     requestAnimationFrame(update);
 }
 
@@ -101,56 +99,73 @@ document.addEventListener('keydown', function(event) {
         newX += player.speed;
     }
 
-    // Verificamos si la colisión es verdadera
     if (!isColliding(newX, newY)) {
         player.x = newX;
         player.y = newY;
     }
 });
 
-// Movimiento aleatorio del enemigo
-function moveEnemy() {
-    let newX = enemy.x + (Math.random() - 1) * enemy.speed;
-    let newY = enemy.y + (Math.random() - 1) * enemy.speed;
+// Movimiento aleatorio de los enemigos
+function moveEnemies() {
+    enemies.forEach(enemy => {
+        let newX = enemy.x + (Math.random() - 0.5) * 2 * enemy.speed;
+        let newY = enemy.y + (Math.random() - 0.5) * 2 * enemy.speed;
 
-    // Verificamos si la colisión es verdadera
-    if (!isColliding(newX, newY)) {
-        enemy.x = newX;
-        enemy.y = newY;
-    }
-    setTimeout(moveEnemy, 1000);
+        if (!isColliding(newX, newY)) {
+            enemy.x = newX;
+            enemy.y = newY;
+        }
+    });
+    setTimeout(moveEnemies, 1000);
 }
 
-// Iniciamos el movimiento del enemigo
-moveEnemy();
-
-// si jugador colisiona con el enemigo
-function isCollidingEnemy() {
-    if (Math.abs(player.x - enemy.x) < 0.5 && Math.abs(player.y - enemy.y) < 0.5) {
-        alert('Perdiste');
-    }
-    setTimeout(isCollidingEnemy, 1000);
+// Función para añadir un nuevo enemigo
+function addEnemy() {
+    let newEnemy = {
+        x: Math.random() * 6 + 1, // posición aleatoria en el mapa
+        y: Math.random() * 6 + 1, // posición aleatoria en el mapa
+        size: 10, // tamaño del enemigo
+        speed: 0.1, // velocidad del enemigo
+    };
+    enemies.push(newEnemy);
+    setTimeout(addEnemy, 10000); // Añadir un nuevo enemigo cada 10 segundos
 }
 
-// Iniciamos la colisión con el enemigo
-isCollidingEnemy();
+// Función para verificar colisiones
+function checkCollisions() {
+    enemies.forEach(enemy => {
+        if (Math.abs(player.x - enemy.x) < 0.5 && Math.abs(player.y - enemy.y) < 0.5) {
+            alert('Perdiste');
+            resetGame();
+        }
+    });
 
-//juego acaba con colision y se reinicia
-function isCollidingEnd() {
     if (Math.abs(player.x - 6.5) < 0.5 && Math.abs(player.y - 6.5) < 0.5) {
         alert('Ganaste');
-        player.x = 1.5;
-        player.y = 1.5;
+        resetGame();
     }
-    setTimeout(isCollidingEnd, 1000);
 }
 
-// Iniciamos la colisión con el final
-isCollidingEnd();
+// Función para reiniciar el juego
+function resetGame() {
+    player.x = 1.5;
+    player.y = 1.5;
+    enemies = [
+        {
+            x: 6.5,
+            y: 6.5,
+            size: 10,
+            speed: 0.1,
+        }
+    ];
+}
 
+// Iniciamos el movimiento de los enemigos
+moveEnemies();
 
-
-
+// Iniciamos la adición de nuevos enemigos
+addEnemy();
 
 // Iniciamos el juego
 update();
+
