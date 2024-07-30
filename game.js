@@ -32,6 +32,13 @@ let enemies = [
     }
 ];
 
+// Posición del cuadrado verde
+let square = {
+    x: Math.random() * 6 + 1, // Ajuste para no salir del borde
+    y: Math.random() * 6 + 1, // Ajuste para no salir del borde
+    size: 20 / tileSize, // tamaño del cuadrado en términos de celdas del mapa
+};
+
 // Colisiones con las paredes
 function isColliding(newX, newY) {
     const mapX = Math.floor(newX);
@@ -71,13 +78,21 @@ function drawEnemies() {
     });
 }
 
+// Función para dibujar el cuadrado verde
+function drawSquare() {
+    context.fillStyle = 'green';
+    context.fillRect(square.x * tileSize, square.y * tileSize, square.size * tileSize, square.size * tileSize);
+}
+
 // Función para actualizar el juego
 function update() {
     context.clearRect(0, 0, canvas.width, canvas.height);
     drawMap();
     drawPlayer();
     drawEnemies();
+    drawSquare();
     checkCollisions();
+    checkSquareCollision();
     requestAnimationFrame(update);
 }
 
@@ -131,16 +146,29 @@ function addEnemy() {
     setTimeout(addEnemy, 10000); // Añadir un nuevo enemigo cada 10 segundos
 }
 
-// Función para verificar colisiones
+// Función para verificar colisiones con enemigos
 function checkCollisions() {
     enemies.forEach(enemy => {
-        if (Math.abs(player.x - enemy.x) < 0.5 && Math.abs(player.y - enemy.y) < 0.5) {
+        const distance = Math.sqrt(
+            Math.pow(player.x - enemy.x, 1) +
+            Math.pow(player.y - enemy.y, 1)
+        );
+
+        if (distance < (player.size + enemy.size) / tileSize) {
             alert('Perdiste');
             resetGame();
         }
     });
+}
 
-    if (Math.abs(player.x - 6.5) < 0.5 && Math.abs(player.y - 6.5) < 0.5) {
+// Función para verificar colisiones con el cuadrado verde
+function checkSquareCollision() {
+    const distance = Math.sqrt(
+        Math.pow(player.x - square.x, 1) +
+        Math.pow(player.y - square.y, 1)
+    );
+
+    if (distance < (player.size / tileSize) + square.size) {
         alert('Ganaste');
         resetGame();
     }
@@ -158,6 +186,9 @@ function resetGame() {
             speed: 0.1,
         }
     ];
+    // Generar una nueva posición para el cuadrado verde
+    square.x = Math.random() * 6 + 1;
+    square.y = Math.random() * 6 + 1;
 }
 
 // Iniciamos el movimiento de los enemigos
@@ -168,4 +199,3 @@ addEnemy();
 
 // Iniciamos el juego
 update();
-
