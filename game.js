@@ -14,6 +14,16 @@ const map = [
     [1, 1, 1, 1, 1, 1, 1, 1],
 ];
 
+// Función para generar posiciones válidas (dentro de celdas blancas)
+function getRandomPosition() {
+    let x, y;
+    do {
+        x = Math.floor(Math.random() * 8); // 8 columnas en el mapa
+        y = Math.floor(Math.random() * 8); // 8 filas en el mapa
+    } while (map[y][x] !== 0);
+    return { x, y };
+}
+
 // Definimos al jugador
 const player = {
     x: 1.5, // posición en el eje x (en coordenadas del mapa)
@@ -22,32 +32,50 @@ const player = {
     speed: 0.1, // velocidad del jugador
 };
 
-// Array de enemigos
-let enemies = [
-    {
-        x: 6.5, // posición en el eje x (en coordenadas del mapa)
-        y: 6.5, // posición en el eje y (en coordenadas del mapa)
-        size: 10, // tamaño del enemigo
-        speed: 0.1, // velocidad del enemigo
-    }
-];
+// Direcciones del jugador
+const playerDirection = { x: 0, y: 0 };
 
 // Posición del cuadrado verde
+let position = getRandomPosition();
 let square = {
-    x: Math.random() * 6 + 1, // Ajuste para no salir del borde
-    y: Math.random() * 6 + 1, // Ajuste para no salir del borde
+    x: position.x + 0.5, // centrar dentro de la celda
+    y: position.y + 0.5, // centrar dentro de la celda
     size: 20 / tileSize, // tamaño del cuadrado en términos de celdas del mapa
 };
 
-// Colisiones con las paredes
-function isColliding(newX, newY) {
-    const mapX = Math.floor(newX);
-    const mapY = Math.floor(newY);
+// Array de enemigos y proyectiles
+let enemies = [];
+let projectiles = [];
 
-    if (map[mapY][mapX] === 1) {
-        return true;
+// Evento para disparar proyectiles
+document.addEventListener('keydown', function(event) {
+    if (event.key === ' ') {
+        shootProjectile();
     }
-    return false;
+});
+
+// Función para disparar un proyectil
+function shootProjectile() {
+    const speed = 5; // velocidad del proyectil
+    projectiles.push({
+        x: player.x * tileSize,
+        y: player.y * tileSize,
+        vx: playerDirection.x * speed,
+        vy: playerDirection.y * speed,
+        size: 3 // tamaño del proyectil
+    });
+}
+
+// Función para actualizar la posición de los proyectiles
+function updateProjectiles() {
+    projectiles = projectiles.filter(projectile => {
+        projectile.x += projectile.vx;
+        projectile.y += projectile.vy;
+
+        // Mantener proyectiles en pantalla
+        return projectile.x > 0 && projectile.x < canvas.width &&
+               projectile.y > 0 && projectile.y < canvas.height;
+    });
 }
 
 // Función para dibujar el mapa
@@ -78,6 +106,16 @@ function drawEnemies() {
     });
 }
 
+// Función para dibujar los proyectiles
+function drawProjectiles() {
+    context.fillStyle = 'black';
+    projectiles.forEach(projectile => {
+        context.beginPath();
+        context.arc(projectile.x, projectile.y, projectile.size, 0, Math.PI * 2);
+        context.fill();
+    });
+}
+
 // Función para dibujar el cuadrado verde
 function drawSquare() {
     context.fillStyle = 'green';
@@ -91,30 +129,57 @@ function update() {
     drawPlayer();
     drawEnemies();
     drawSquare();
+    updateProjectiles();
+    drawProjectiles();
     checkCollisions();
     checkSquareCollision();
+    checkProjectileCollisions();
     requestAnimationFrame(update);
+}
+
+// Colisiones con las paredes
+function isColliding(newX, newY) {
+    const mapX = Math.floor(newX);
+    const mapY = Math.floor(newY);
+
+    if (map[mapY][mapX] === 1) {
+        return true;
+    }
+    return false;
 }
 
 // Movimiento del jugador
 document.addEventListener('keydown', function(event) {
     let newX = player.x;
     let newY = player.y;
+    let moved = false;
 
     if (event.key === 'ArrowUp') {
         newY -= player.speed;
+        playerDirection.x = 0;
+        playerDirection.y = -1;
+        moved = true;
     }
     if (event.key === 'ArrowDown') {
         newY += player.speed;
+        playerDirection.x = 0;
+        playerDirection.y = 1;
+        moved = true;
     }
     if (event.key === 'ArrowLeft') {
         newX -= player.speed;
+        playerDirection.x = -1;
+        playerDirection.y = 0;
+        moved = true;
     }
     if (event.key === 'ArrowRight') {
         newX += player.speed;
+        playerDirection.x = 1;
+        playerDirection.y = 0;
+        moved = true;
     }
 
-    if (!isColliding(newX, newY)) {
+    if (moved && !isColliding(newX, newY)) {
         player.x = newX;
         player.y = newY;
     }
@@ -136,9 +201,10 @@ function moveEnemies() {
 
 // Función para añadir un nuevo enemigo
 function addEnemy() {
+    let position = getRandomPosition();
     let newEnemy = {
-        x: Math.random() * 6 + 1, // posición aleatoria en el mapa
-        y: Math.random() * 6 + 1, // posición aleatoria en el mapa
+        x: position.x + 0.5, // centrar dentro de la celda
+        y: position.y + 0.5, // centrar dentro de la celda
         size: 10, // tamaño del enemigo
         speed: 0.1, // velocidad del enemigo
     };
@@ -150,8 +216,8 @@ function addEnemy() {
 function checkCollisions() {
     enemies.forEach(enemy => {
         const distance = Math.sqrt(
-            Math.pow(player.x - enemy.x, 1) +
-            Math.pow(player.y - enemy.y, 1)
+            Math.pow(player.x - enemy.x, 2) +
+            Math.pow(player.y - enemy.y, 2)
         );
 
         if (distance < (player.size + enemy.size) / tileSize) {
@@ -164,31 +230,47 @@ function checkCollisions() {
 // Función para verificar colisiones con el cuadrado verde
 function checkSquareCollision() {
     const distance = Math.sqrt(
-        Math.pow(player.x - square.x, 1) +
-        Math.pow(player.y - square.y, 1)
+        Math.pow(player.x - square.x, 2) +
+        Math.pow(player.y - square.y, 2)
     );
 
-    if (distance < (player.size / tileSize) + square.size) {
+    if (distance < (player.size / tileSize) + (square.size)) {
         alert('Ganaste');
         resetGame();
     }
+}
+
+// Función para verificar colisiones con proyectiles
+function checkProjectileCollisions() {
+    projectiles.forEach((projectile, pIndex) => {
+        enemies.forEach((enemy, eIndex) => {
+            const distance = Math.sqrt(
+                Math.pow((projectile.x / tileSize) - enemy.x, 2) +
+                Math.pow((projectile.y / tileSize) - enemy.y, 2)
+            );
+
+            if (distance < (enemy.size / tileSize)) {
+                // Eliminar el proyectil y el enemigo
+                enemies.splice(eIndex, 1);
+                projectiles.splice(pIndex, 1);
+            }
+        });
+    });
 }
 
 // Función para reiniciar el juego
 function resetGame() {
     player.x = 1.5;
     player.y = 1.5;
-    enemies = [
-        {
-            x: 6.5,
-            y: 6.5,
-            size: 10,
-            speed: 0.1,
-        }
-    ];
-    // Generar una nueva posición para el cuadrado verde
-    square.x = Math.random() * 6 + 1;
-    square.y = Math.random() * 6 + 1;
+    enemies = [];
+
+    // Generar nueva posición para el cuadrado verde
+    position = getRandomPosition();
+    square.x = position.x + 0.5;
+    square.y = position.y + 0.5;
+
+    // Añadir un enemigo inicial en una posición válida
+    addEnemy();
 }
 
 // Iniciamos el movimiento de los enemigos
@@ -199,3 +281,5 @@ addEnemy();
 
 // Iniciamos el juego
 update();
+
+   
