@@ -1,6 +1,6 @@
 const canvas = document.getElementById('gameCanvas');
 const context = canvas.getContext('2d');
-const tileSize = 80; // Tamaño de cada celda del mapa
+const tileSize = 70; // Tamaño de cada celda del mapa
 
 // Definimos el mapa
 const map = [
@@ -10,6 +10,9 @@ const map = [
     [1, 0, 1, 0, 0, 1, 0, 1],
     [1, 0, 0, 0, 0, 0, 0, 1],
     [1, 0, 0, 1, 0, 0, 0, 1],
+    [1, 0, 0, 1, 0, 0, 0, 1],
+    [1, 0, 1, 1, 0, 1, 0, 1],
+    [1, 0, 1, 1, 0, 1, 0, 1],
     [1, 0, 0, 1, 0, 0, 0, 1],
     [1, 1, 1, 1, 1, 1, 1, 1],
 ];
