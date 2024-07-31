@@ -181,6 +181,36 @@ document.addEventListener('keydown', function(event) {
         playerDirection.y = 0;
         moved = true;
     }
+    //movimientos diagonales
+    if (event.key === 'ArrowUp' && event.key === 'ArrowRight') {
+        newY -= player.speed;
+        playerDirection.x = 1;
+        playerDirection.y = -1;
+        moved = true;
+    }
+    if (event.key === 'ArrowUp' && event.key === 'ArrowLeft') {
+        newY -= player.speed;
+        playerDirection.x = -1;
+        playerDirection.y = -1;
+        moved = true;
+
+    }   
+
+    if (event.key === 'ArrowDown' && event.key === 'ArrowRight') {
+        newY += player.speed;
+        playerDirection.x = 1;
+        playerDirection.y = 1;
+        moved = true;
+
+    }
+    if (event.key === 'ArrowDown' && event.key === 'ArrowLeft') {
+        newY += player.speed;
+        playerDirection.x = -1;
+        playerDirection.y = 1;
+        moved = true;
+
+    }
+    
 
     if (moved && !isColliding(newX, newY)) {
         player.x = newX;
