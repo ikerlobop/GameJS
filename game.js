@@ -57,17 +57,24 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
-// Función para disparar un proyectil
 function shootProjectile() {
     const speed = 5; // velocidad del proyectil
+    const magnitude = Math.sqrt(playerDirection.x * playerDirection.x + playerDirection.y * playerDirection.y);
+
+    // Asegurarse de que el jugador tenga una dirección válida (evitar división por cero)
+    const normalizedDirectionX = (magnitude > 0) ? playerDirection.x / magnitude : 0;
+    const normalizedDirectionY = (magnitude > 0) ? playerDirection.y / magnitude : 0;
+
+    // Añadir el proyectil al array de proyectiles
     projectiles.push({
         x: player.x * tileSize,
         y: player.y * tileSize,
-        vx: playerDirection.x * speed,
-        vy: playerDirection.y * speed,
+        vx: normalizedDirectionX * speed,
+        vy: normalizedDirectionY * speed,
         size: 3 // tamaño del proyectil
     });
 }
+
 
 // Función para actualizar la posición de los proyectiles
 function updateProjectiles() {
@@ -155,68 +162,35 @@ function isColliding(newX, newY) {
 document.addEventListener('keydown', function(event) {
     let newX = player.x;
     let newY = player.y;
-    let moved = false;
+    let directionX = 0;
+    let directionY = 0;
 
-    if (event.key === 'ArrowUp') {
-        newY -= player.speed;
-        playerDirection.x = 0;
-        playerDirection.y = -1;
-        moved = true;
-    }
-    if (event.key === 'ArrowDown') {
-        newY += player.speed;
-        playerDirection.x = 0;
-        playerDirection.y = 1;
-        moved = true;
-    }
-    if (event.key === 'ArrowLeft') {
-        newX -= player.speed;
-        playerDirection.x = -1;
-        playerDirection.y = 0;
-        moved = true;
-    }
-    if (event.key === 'ArrowRight') {
-        newX += player.speed;
-        playerDirection.x = 1;
-        playerDirection.y = 0;
-        moved = true;
-    }
-    //movimientos diagonales
-    if (event.key === 'ArrowUp' && event.key === 'ArrowRight') {
-        newY -= player.speed;
-        playerDirection.x = 1;
-        playerDirection.y = -1;
-        moved = true;
-    }
-    if (event.key === 'ArrowUp' && event.key === 'ArrowLeft') {
-        newY -= player.speed;
-        playerDirection.x = -1;
-        playerDirection.y = -1;
-        moved = true;
+    if (event.key === 'ArrowUp') directionY = -1;
+    if (event.key === 'ArrowDown') directionY = 1;
+    if (event.key === 'ArrowLeft') directionX = -1;
+    if (event.key === 'ArrowRight') directionX = 1;
 
-    }   
+    // Si se detecta una dirección de movimiento
+    if (directionX !== 0 || directionY !== 0) {
+        let magnitude = Math.sqrt(directionX * directionX + directionY * directionY);
+        directionX /= magnitude;
+        directionY /= magnitude;
 
-    if (event.key === 'ArrowDown' && event.key === 'ArrowRight') {
-        newY += player.speed;
-        playerDirection.x = 1;
-        playerDirection.y = 1;
-        moved = true;
+        newX += directionX * player.speed;
+        newY += directionY * player.speed;
 
-    }
-    if (event.key === 'ArrowDown' && event.key === 'ArrowLeft') {
-        newY += player.speed;
-        playerDirection.x = -1;
-        playerDirection.y = 1;
-        moved = true;
+        playerDirection.x = directionX;
+        playerDirection.y = directionY;
 
-    }
-    
-
-    if (moved && !isColliding(newX, newY)) {
-        player.x = newX;
-        player.y = newY;
+        // Verificar colisiones y actualizar la posición del jugador
+        if (!isColliding(newX, newY)) {
+            player.x = newX;
+            player.y = newY;
+        }
     }
 });
+
+
 
 // Movimiento aleatorio de los enemigos
 function moveEnemies() {
