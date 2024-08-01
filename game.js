@@ -40,11 +40,21 @@ const playerDirection = { x: 0, y: 0 };
 
 // Posición del cuadrado verde
 let position = getRandomPosition();
-let square = {
+let greenSquare = {
     x: position.x + 0.5, // centrar dentro de la celda
     y: position.y + 0.5, // centrar dentro de la celda
     size: 20 / tileSize, // tamaño del cuadrado en términos de celdas del mapa
 };
+
+// Posición del cuadrado amarillo
+position = getRandomPosition();
+let yellowSquare = {
+    x: position.x + 0.5,
+    y: position.y + 0.5,
+    size: 20 / tileSize,
+};
+
+let hasCollectedYellowSquare = false;
 
 // Array de enemigos y proyectiles
 let enemies = [];
@@ -74,7 +84,6 @@ function shootProjectile() {
         size: 3 // tamaño del proyectil
     });
 }
-
 
 // Función para actualizar la posición de los proyectiles
 function updateProjectiles() {
@@ -127,15 +136,15 @@ function drawProjectiles() {
 }
 
 // Función para dibujar el cuadrado verde
-function drawSquare() {
+function drawGreenSquare() {
     context.fillStyle = 'green';
-    context.fillRect(square.x * tileSize, square.y * tileSize, square.size * tileSize, square.size * tileSize);
+    context.fillRect(greenSquare.x * tileSize, greenSquare.y * tileSize, greenSquare.size * tileSize, greenSquare.size * tileSize);
 }
 
 // Función para dibujar el cuadrado amarillo
 function drawYellowSquare() {
     context.fillStyle = 'yellow';
-    context.fillRect(square.x * tileSize, square.y * tileSize, square.size * tileSize, square.size * tileSize);
+    context.fillRect(yellowSquare.x * tileSize, yellowSquare.y * tileSize, yellowSquare.size * tileSize, yellowSquare.size * tileSize);
 }
 
 // Función para actualizar el juego
@@ -144,12 +153,13 @@ function update() {
     drawMap();
     drawPlayer();
     drawEnemies();
-    drawSquare();
-    drawYellowSquare();
+    if (yellowSquare) drawYellowSquare(); // Dibujar el cuadrado amarillo si no ha sido recogido
+    drawGreenSquare(); // Dibujar el cuadrado verde
     updateProjectiles();
     drawProjectiles();
     checkCollisions();
-    checkSquareCollision();
+    checkYellowSquareCollision(); // Verificar colisiones con el cuadrado amarillo
+    checkGreenSquareCollision(); // Verificar colisiones con el cuadrado verde
     checkProjectileCollisions();
     requestAnimationFrame(update);
 }
@@ -197,8 +207,6 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
-
-
 // Movimiento aleatorio de los enemigos
 function moveEnemies() {
     enemies.forEach(enemy => {
@@ -242,32 +250,33 @@ function checkCollisions() {
 }
 
 // Función para verificar colisiones con el cuadrado verde
-function checkSquareCollision() {
+function checkGreenSquareCollision() {
     const distance = Math.sqrt(
-        Math.pow(player.x - square.x, 2) +
-        Math.pow(player.y - square.y, 2)
+        Math.pow(player.x - greenSquare.x, 2) +
+        Math.pow(player.y - greenSquare.y, 2)
     );
 
-  //si colisionamos con el cuadrado verde y previamente hemos recogido el cuadrado amarillo ganamos
-    if (distance < (player.size + square.size) / tileSize && square === null) {
+    // Si el jugador colisiona con el cuadrado verde y ha recogido el cuadrado amarillo
+    if (distance < (player.size + greenSquare.size) / tileSize && hasCollectedYellowSquare) {
         alert('Ganaste');
         resetGame();
     }
-
 }
 
 // Función para verificar colisiones con el cuadrado amarillo
 function checkYellowSquareCollision() {
+    if (!yellowSquare) return; // Si el cuadrado amarillo ya fue recogido, no hacer nada
+
     const distance = Math.sqrt(
-        Math.pow(player.x - square.x, 2) +
-        Math.pow(player.y - square.y, 2)
+        Math.pow(player.x - yellowSquare.x, 2) +
+        Math.pow(player.y - yellowSquare.y, 2)
     );
 
-    //al colisionar con el cuadrado amarillo, este desaparece y lo almacenamos
-    if (distance < (player.size + square.size) / tileSize) {
-        square = null;
+    // Al colisionar con el cuadrado amarillo, se marca como recogido
+    if (distance < (player.size + yellowSquare.size) / tileSize) {
+        yellowSquare = null;
+        hasCollectedYellowSquare = true;
     }
-
 }
 
 // Función para verificar colisiones con proyectiles
@@ -293,17 +302,21 @@ function resetGame() {
     player.x = 1.5;
     player.y = 1.5;
     enemies = [];
+    projectiles = [];
+    hasCollectedYellowSquare = false;
 
     // Generar nueva posición para el cuadrado verde
     position = getRandomPosition();
-    square.x = position.x + 0.5;
-    square.y = position.y + 0.5;
+    greenSquare.x = position.x + 0.5;
+    greenSquare.y = position.y + 0.5;
 
     // Generar nueva posición para el cuadrado amarillo
     position = getRandomPosition();
-    square.x = position.x + 0.5;
-    square.y = position.y + 0.5;
-    
+    yellowSquare = {
+        x: position.x + 0.5,
+        y: position.y + 0.5,
+        size: 20 / tileSize,
+    };
 
     // Añadir un enemigo inicial en una posición válida
     addEnemy();
@@ -317,5 +330,3 @@ addEnemy();
 
 // Iniciamos el juego
 update();
-
-   
