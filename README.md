@@ -2,7 +2,7 @@
 
 ## Descripción
 
-**JavaScript Gauntlet** es un juego de acción basado en Gauntlet desarrollado en JavaScript. Navega por un laberinto, enfrenta enemigos, dispara proyectiles y alcanza el cuadrado verde para ganar. Este juego se ejecuta en el navegador y ofrece una experiencia interactiva y entretenida.
+JavaScript Gauntlet" es un juego de acción inspirado en Gauntlet, desarrollado en JavaScript. Los jugadores deben navegar a través de un laberinto, enfrentarse a enemigos, disparar proyectiles y llegar a la puerta de salida para ganar. Actualmente, el juego está en desarrollo, y su objetivo principal es servir como un proyecto para profundizar en el conocimiento de la programación.
 
 ## Características Actuales
 
@@ -10,7 +10,7 @@
 - **Jugador**: Mueve al jugador con las teclas de flechas y dispara proyectiles con la tecla de espacio.
 - **Enemigos**: Los enemigos se generan aleatoriamente y se mueven de manera aleatoria.
 - **Proyectiles**: Dispara proyectiles que se mueven en la dirección de tu movimiento.
-- **Objetivo**: Alcanzar el cuadrado verde para ganar el juego.
+- **Objetivo**: Alcanzar el cuadrado verde (puerta) para ganar el juego recogiendo previamente el cuadrado amarillo(llave).
 
 ## Requisitos del Sistema
 
