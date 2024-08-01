@@ -207,6 +207,7 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
+/*
 // Movimiento aleatorio de los enemigos
 function moveEnemies() {
     enemies.forEach(enemy => {
@@ -219,8 +220,37 @@ function moveEnemies() {
         }
     });
     setTimeout(moveEnemies, 1000);
-}
+}*/
 
+ // Movimiento de los enemigos para perseguir al jugador
+function moveEnemies() {
+    enemies.forEach(enemy => {
+        // Calcular la dirección hacia el jugador
+        const directionX = player.x - enemy.x;
+        const directionY = player.y - enemy.y;
+        const magnitude = Math.sqrt(directionX * directionX + directionY * directionY);
+
+        // Normalizar la dirección y escalarla por la velocidad del enemigo
+        const normalizedDirectionX = directionX / magnitude;
+        const normalizedDirectionY = directionY / magnitude;
+
+        // Calcular nueva posición del enemigo
+        let newX = enemy.x + normalizedDirectionX * enemy.speed;
+        let newY = enemy.y + normalizedDirectionY * enemy.speed;
+
+        // Verificar colisiones con paredes y actualizar posición
+        if (!isColliding(newX, newY)) {
+            enemy.x = newX;
+            enemy.y = newY;
+        }
+    });
+
+   
+    //ralentizar velocidad de los enemigos
+    setTimeout(moveEnemies, 1000 / 5); // Aproximadamente 120 FPS
+}
+     
+      
 // Función para añadir un nuevo enemigo
 function addEnemy() {
     let position = getRandomPosition();
@@ -228,7 +258,7 @@ function addEnemy() {
         x: position.x + 0.5, // centrar dentro de la celda
         y: position.y + 0.5, // centrar dentro de la celda
         size: 10, // tamaño del enemigo
-        speed: 0.1, // velocidad del enemigo
+        speed: 0.05, // velocidad del enemigo
     };
     enemies.push(newEnemy);
     setTimeout(addEnemy, 10000); // Añadir un nuevo enemigo cada 10 segundos
