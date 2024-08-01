@@ -132,6 +132,12 @@ function drawSquare() {
     context.fillRect(square.x * tileSize, square.y * tileSize, square.size * tileSize, square.size * tileSize);
 }
 
+// Función para dibujar el cuadrado amarillo
+function drawYellowSquare() {
+    context.fillStyle = 'yellow';
+    context.fillRect(square.x * tileSize, square.y * tileSize, square.size * tileSize, square.size * tileSize);
+}
+
 // Función para actualizar el juego
 function update() {
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -139,6 +145,7 @@ function update() {
     drawPlayer();
     drawEnemies();
     drawSquare();
+    drawYellowSquare();
     updateProjectiles();
     drawProjectiles();
     checkCollisions();
@@ -241,10 +248,26 @@ function checkSquareCollision() {
         Math.pow(player.y - square.y, 2)
     );
 
-    if (distance < (player.size / tileSize) + (square.size)) {
+  //si colisionamos con el cuadrado verde y previamente hemos recogido el cuadrado amarillo ganamos
+    if (distance < (player.size + square.size) / tileSize && square === null) {
         alert('Ganaste');
         resetGame();
     }
+
+}
+
+// Función para verificar colisiones con el cuadrado amarillo
+function checkYellowSquareCollision() {
+    const distance = Math.sqrt(
+        Math.pow(player.x - square.x, 2) +
+        Math.pow(player.y - square.y, 2)
+    );
+
+    //al colisionar con el cuadrado amarillo, este desaparece y lo almacenamos
+    if (distance < (player.size + square.size) / tileSize) {
+        square = null;
+    }
+
 }
 
 // Función para verificar colisiones con proyectiles
@@ -275,6 +298,12 @@ function resetGame() {
     position = getRandomPosition();
     square.x = position.x + 0.5;
     square.y = position.y + 0.5;
+
+    // Generar nueva posición para el cuadrado amarillo
+    position = getRandomPosition();
+    square.x = position.x + 0.5;
+    square.y = position.y + 0.5;
+    
 
     // Añadir un enemigo inicial en una posición válida
     addEnemy();
